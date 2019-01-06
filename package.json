@@ -1,0 +1,22 @@
+{
+  "name": "nonce",
+  "version": "0.0.0",
+  "description": "Javascript to recreate the nonce graph",
+  "main": "nonce.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bitcoin",
+    "stats"
+  ],
+  "author": "kngako",
+  "license": "ISC",
+  "dependencies": {
+    "bitcoind-client": "^2.2.11",
+    "config": "^3.0.1",
+    "es6-promise": "^4.2.5",
+    "isomorphic-fetch": "^2.2.1",
+    "nedb": "^1.8.0"
+  }
+}

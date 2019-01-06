@@ -1,0 +1,9 @@
+{
+    "bitcoin-rpc": {
+        "rpchost": "HOST",
+        "rpcuser": "RPC_USER",
+        "rpcpassword": "RPC_PASSWORD",
+        "rpcport": "RPC_PORT"
+    },
+    "blocks-to-discover": 1000
+}
