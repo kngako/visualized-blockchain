@@ -5,5 +5,9 @@
         "rpcpassword": "RPC_PASSWORD",
         "rpcport": "RPC_PORT"
     },
-    "blocks-to-persist": 1000
+    "blocks-to-persist": 1000,
+    "plotly": {
+        "username": "DemoAccount",
+        "api-key": "lr1c37zw81"
+    }
 }
