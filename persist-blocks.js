@@ -96,7 +96,7 @@ var getBlockFor = (blockhash) => {
                         console.log("Block in DB: ", persistedBlock);
                         blocksToPersist--;
 
-                        loadAndPersistCoinbaseTransaction(persistedBlock.coinbaseTx.txid)
+                        loadAndPersistCoinbaseTransaction(persistedBlock.coinbaseTx.txid, persistedBlock.hash)
                             .then(result => {
                                 // console.log("Coinbase updated: ", result);
                             })
@@ -140,9 +140,9 @@ var getBlockFor = (blockhash) => {
     })
 };
 
-var loadAndPersistCoinbaseTransaction = (txid) => {
+var loadAndPersistCoinbaseTransaction = (txid, blockhash) => {
     return new Promise((resolve, reject) => {
-        bitcoinRPC('getrawtransaction', txid, true) // Isn't there a way to limit block to n transactions...
+        bitcoinRPC('getrawtransaction', txid, true, blockhash) // Isn't there a way to limit block to n transactions...
                 .then(coinbaseTransaction => {
                     db.blocks.update({
                         coinbaseTx: {
