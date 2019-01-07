@@ -5,5 +5,5 @@
         "rpcpassword": "RPC_PASSWORD",
         "rpcport": "RPC_PORT"
     },
-    "blocks-to-discover": 1000
+    "blocks-to-persist": 1000
 }

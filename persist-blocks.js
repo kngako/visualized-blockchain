@@ -11,72 +11,109 @@ const bitcoinRPC = createCall(config.get("bitcoin-rpc"));
 var Datastore = require('nedb');
 db = {};
 db.blocks = new Datastore({ filename: 'blocks.db', autoload: true });
-db.coinbaseTransactions = new Datastore({ filename: 'coinbaseTransactions.db', autoload: true });
+// db.coinbaseTransactions = new Datastore({ filename: 'coinbaseTransactions.db', autoload: true });
 
-var blocksToDiscover = config.get("blocks-to-discover");
+var blocksToPersist = config.get("blocks-to-persist"); // How many blocks do you want to find in this run...
 var lowestBlock = {
+    // I can have the genesis blockhash here...
+    height: Number.MAX_SAFE_INTEGER
+}; 
+var highestBlock = {
     height: 0
 }; 
 
-// Get the lowest height...
-db.blocks.findOne({}).sort({height: 1}).exec(function (error, result) {
-    console.log("Found lowest: ", result);
-    if(result) {
-        lowestBlock = result;
+// Get the lowest and highest blocks...
+db.blocks.findOne({}).sort({height: -1}).exec(function (error, highestResult) {
+    console.log("Found Highest: ", highestResult);
+    if(highestResult) {
+        highestBlock = highestResult;
     }
+    db.blocks.findOne({}).sort({height: 1}).exec(function (error, lowestResult) {
+        console.log("Found lowest: ", lowestResult);
+        if(lowestResult) {
+            lowestBlock = lowestResult;
+        }
 
-    bitcoinRPC(`getblockcount`)
-    .then(tip => {            
-        console.log("Tip: ", tip);
-        return bitcoinRPC(`getblockhash`, tip);         
-    })
-    .then(blockhash => {
-        console.log("Blockhash: ", blockhash);
-        return getBlockFor(blockhash); 
-    }).then(() => {
-        db.blocks.count({}, function (error, count) {
-            if(error) {
-                console.error("Counting error: ", error);
+        bitcoinRPC(`getblockcount`)
+        .then(tip => {            
+            console.log("Tip: ", tip);
+            if(tip > highestBlock.height) {
+                highestBlock.height = 0;
             }
-            console.log("Data points of interest: ", count);
+            return bitcoinRPC(`getblockhash`, tip);         
         })
-        
+        .then(blockhash => {
+            return getBlockFor(highestBlock.height == 0 ? blockhash : highestBlock.hash); 
+        })
+        .then(() => {
+            db.blocks.count({}, function (error, count) {
+                if(error) {
+                    console.error("Counting error: ", error);
+                }
+                console.log("Data points of interest: ", count);
+            })
+            
+        })
+        .catch(e => console.error(e));
     })
-    .catch(e => console.error(e));
-})
+});
 
 var getBlockFor = (blockhash) => {
-    console.log("About to consume: ", blockhash)
     return new Promise((resolve, reject) => {
-        
-        db.blocks.findOne({
-            hash: blockhash
-        }, function (blockError, previouslyPersistedBlock) {
-            if(blockError) {
-                reject(blockError);
-                return;
-            }
-            // if blockhash is already persisted... 
-            // get previousBlockhash for block at lowest height... 
-            // else getblock for curr 
-            bitcoinRPC('getblock', previouslyPersistedBlock ? lowestBlock.previousblockhash : blockhash) // Isn't there a way to limit block to n transactions...
-                .then(block => {
-                    // console.log("Block: ", block);
+        console.log("About to process: ", blockhash);
+        // if blockhash is already persisted... 
+        // get previousBlockhash for block at lowest height... 
+        // else getblock for curr
+        // TODO: Allow highestPersistedBlock.nextblockhash if it's avaible...
+        bitcoinRPC('getblock', blockhash) // Isn't there a way to limit block to n transactions...
+            .then(block => {
+                if(highestBlock.hash == block.hash) {
+                    highestBlock = block; // Incase something changed from the last time we persisted this block...
+                    resolve(Promise.resolve(getBlockFor(highestBlock.nextblockhash ? highestBlock.nextblockhash : lowestBlock.previousblockhash)));
+                } else {
                     db.blocks.insert({
                         hash: block.hash,
+                        confirmations: block.confirmations,
+                        size: block.size,
+                        strippedsize: block.strippedsize,
+                        weight: block.weight,
                         height: block.height,
+                        version: block.version,
+                        versionHex: block.versionHex,
+                        merkleroot: block.merkleroot,
+                        time: block.time,
+                        mediantime: block.mediantime,
                         nonce: block.nonce,
+                        bits: block.bits,
+                        difficulty: block.difficulty,
+                        chainwork: block.chainwork,
                         previousblockhash: block.previousblockhash,
-                        coinbaseTransaction: block.tx[0]
-                        // TODO: Structure this to match the actual coinbaseTransaction a little more...
+                        nextblockhash: block.nextblockhash,
+                        coinbaseTx: {
+                            txid: block.tx[0]
+                        }
                     }, function (error, persistedBlock) {
                         console.log("Block in DB: ", persistedBlock);
+                        blocksToPersist--;
 
-                        // TODO: load persistCoinbaseTransaction(persistedBlock.coinbaseTransaction)
-                        blocksToDiscover--;
-                        if(block.previousblockhash && blocksToDiscover >= 0) {
+                        loadAndPersistCoinbaseTransaction(persistedBlock.coinbaseTx.txid)
+                            .then(result => {
+                                // console.log("Coinbase updated: ", result);
+                            })
+                            .catch(error => {
+                                console.error("Coinbase Erro: ", error);
+                            })
+                        
+                        // TODO: if persistedBlock.height > highestPersistedBlock.height update highestPersistedBlock to persistedBlock...
+                        if(persistedBlock.height > highestBlock.height) {
+                            highestBlock = persistedBlock;
+                        } 
+                        if(persistedBlock.height < lowestBlock.height) {
+                            lowestBlock = persistedBlock;
+                        }
+                        if(blocksToPersist >= 0 && (block.previousblockhash || block.nextblockhash)) {
                             // A little recursion to make the worl go round...
-                            resolve(Promise.resolve(getBlockFor(block.previousblockhash)));
+                            resolve(Promise.resolve(getBlockFor(highestBlock.nextblockhash ? highestBlock.nextblockhash : lowestBlock.previousblockhash)));
                             // Not quite sure about this resolve...
                         } else {
                             // At this point we can render our datapoints...
@@ -85,12 +122,60 @@ var getBlockFor = (blockhash) => {
                             resolve(true);
                         }
                     } );
-                    
-                    
-                }).catch(e => {
-                    reject(e);
-                });
+                }
+            }).catch(e => {
+                reject(e);
+            });
+
+        db.blocks.findOne({
+            hash: blockhash
+        }, function (blockError, previouslyPersistedBlock) {
+            if(blockError) {
+                reject(blockError);
+                return;
+            }
+            
         })
         
     })
 };
+
+var loadAndPersistCoinbaseTransaction = (txid) => {
+    return new Promise((resolve, reject) => {
+        bitcoinRPC('getrawtransaction', txid, true) // Isn't there a way to limit block to n transactions...
+                .then(coinbaseTransaction => {
+                    db.blocks.update({
+                        coinbaseTx: {
+                            txid: txid
+                        }
+                    }, {
+                        $set: {
+                            coinbaseTx: {
+                                in_active_chain: coinbaseTransaction.in_active_chain,
+                                hex: coinbaseTransaction.hex,
+                                txid: coinbaseTransaction.txid,
+                                hash: coinbaseTransaction.hash,
+                                size: coinbaseTransaction.size,
+                                vsize: coinbaseTransaction.vsize,
+                                version: coinbaseTransaction.version,
+                                locktime: coinbaseTransaction.locktime,
+                                vin: coinbaseTransaction.vin,
+                                vout: coinbaseTransaction.vout,
+                                blockhash: coinbaseTransaction.blockhash,
+                                confirmations: coinbaseTransaction.confirmations,
+                                time: coinbaseTransaction.time,
+                                blocktime: coinbaseTransaction.blocktime
+                            }
+                        }
+                    }, {}, function (error, numReplaced) {
+                        if(error) {
+                            reject(error);
+                            return;
+                        }
+                        resolve(numReplaced);
+                    })
+                }).catch(e => {
+                    reject(e);
+                });
+    });
+}
