@@ -19,6 +19,7 @@
     "d3-node": "^2.1.0",
     "es6-promise": "^4.2.5",
     "isomorphic-fetch": "^2.2.1",
-    "nedb": "^1.8.0"
+    "nedb": "^1.8.0",
+    "plotly": "^1.0.6"
   }
 }
