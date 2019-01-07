@@ -1,0 +1,83 @@
+
+<!-- Based this example from this https://plot.ly/javascript/line-and-scatter/ -->
+<html>
+    <head>
+        <title>Scatter Plot...</title>
+        <style>
+            .svg-container {
+                width: 100%;
+                height: 100%;
+            }
+            .graph {
+                width: 100%;
+                height: 100%;
+            }
+            .svg-content-responsive {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="graph"></div>
+
+        <script src="sample-blocks.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script>
+            var maxBlockHeight = blocks.reduce((accumulator, block) => {
+                return accumulator < block.height ? block.height : accumulator; 
+            }, 0); // TODO: Might wanna use Number.MIN_SAFE_VALUE...
+            var minBlockHeight = blocks.reduce((accumulator, block) => {
+                return accumulator > block.height ? block.height : accumulator; 
+            }, maxBlockHeight);
+
+            blockHeightRange = maxBlockHeight - minBlockHeight;
+
+            var maxBlockNonce = blocks.reduce((accumulator, block) => {
+                return accumulator < block.nonce ? block.nonce : accumulator; 
+            }, 0); // TODO: Might wanna use Number.MIN_SAFE_VALUE...
+            var minBlockNonce = blocks.reduce((accumulator, block) => {
+                return accumulator > block.nonce ? block.nonce : accumulator; 
+            }, maxBlockNonce); // TODO: Might wanna use Number.MAX_SAFE_VALUE...
+            
+            blockNonceRange = maxBlockNonce - minBlockNonce;
+             
+            
+            var trace1 = {
+                x: [1, 2, 3, 4, 5],
+                y: [1, 6, 3, 6, 1],
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Team A',
+                text: ['A-1', 'A-2', 'A-3', 'A-4', 'A-5'],
+                marker: { size: 12 }
+            };
+
+            var data = [{
+                x: blocks.map(block => block.height),
+                y: blocks.map(block => block.nonce),
+                mode: 'markers',
+                type: 'scatter',
+                name: 'Nonce to Block height distribution',
+                text: blocks.map(block => block.height),
+                marker: {
+                    size: 10
+                }
+            }];
+
+            var layout = { 
+                xaxis: {
+                    range: [ minBlockHeight, maxBlockHeight ] 
+                },
+                yaxis: {
+                    range: [minBlockNonce, maxBlockNonce]
+                },
+                title:'Nonce Visualization...'
+            };
+
+            Plotly.newPlot('graph', data, layout, {showSendToCloud: true});
+            
+        </script>
+    </body>
+</html>
+
