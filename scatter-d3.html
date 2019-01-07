@@ -1,0 +1,88 @@
+<!-- TODO: Figure out how to visualize this with d3... -->
+<html>
+    <head>
+        <title>D3 Scatter Plot...</title>
+        <style>
+            .svg-container {
+                width: 100%;
+                height: 100%;
+            }
+            .graph {
+                width: 100%;
+                height: 100%;
+            }
+            .svg-content-responsive {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="graph"></div>
+
+        <script src="sample-blocks.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.1/d3.min.js"></script>
+        <script>
+            var maxBlockHeight = blocks.reduce((accumulator, block) => {
+                return accumulator < block.height ? block.height : accumulator; 
+            }, 0); // TODO: Might wanna use Number.MIN_SAFE_VALUE...
+            var minBlockHeight = blocks.reduce((accumulator, block) => {
+                return accumulator > block.height ? block.height : accumulator; 
+            }, maxBlockHeight);
+
+            blockHeightRange = maxBlockHeight - minBlockHeight;
+
+            var maxBlockNonce = blocks.reduce((accumulator, block) => {
+                return accumulator < block.nonce ? block.nonce : accumulator; 
+            }, 0); // TODO: Might wanna use Number.MIN_SAFE_VALUE...
+            var minBlockNonce = blocks.reduce((accumulator, block) => {
+                return accumulator > block.nonce ? block.nonce : accumulator; 
+            }, maxBlockNonce); // TODO: Might wanna use Number.MAX_SAFE_VALUE...
+            
+            blockNonceRange = maxBlockNonce - minBlockNonce;
+             
+            var vis = d3.select("#graph")
+                .append("div")
+                .classed("svg-container", true) //container class to make it responsive
+                .append("svg")
+                // .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", `0 0 ${blockHeightRange} ${blockNonceRange}`)
+                //class to make it responsive
+                .classed("svg-content-responsive", true);
+                // .attr("width", blockHeightRange)
+                // .attr("height", blockNonceRange);
+
+            vis.text("My First Graph")
+                .select("#graph");
+
+            console.log("Showing: ", blocks);
+
+            vis.selectAll("circle .nodes")
+                .data(blocks)
+                .enter()
+                .append("svg:circle")
+                .attr("class", "nodes")
+                .attr("cx", function(block) { return block.height - minBlockHeight; })
+                .attr("cy", function(block) { return block.nonce - minBlockNonce; })
+                .attr("r", "5px") // TODO: Find a way to dynamically set radius...
+                .attr("fill", "black");
+
+            // var links = [
+            //     {source: nodes[0], target: nodes[1]},
+            //     {source: nodes[2], target: nodes[1]}
+            // ];
+
+            // TODO: Plot the difficulty like so...
+            // vis.selectAll(".line")
+            //     .data(links)
+            //     .enter()
+            //     .append("line")
+            //     .attr("x1", function(d) { return d.source.x })
+            //     .attr("y1", function(d) { return d.source.y })
+            //     .attr("x2", function(d) { return d.target.x })
+            //     .attr("y2", function(d) { return d.target.y })
+            //     .style("stroke", "rgb(6,120,155)");
+
+        </script>
+    </body>
+</html>
