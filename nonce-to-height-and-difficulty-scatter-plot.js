@@ -37,6 +37,19 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
             marker: {
                 size: 4
             },
+        }, 
+        // Difficulty related stuff...
+        {
+            x: blocks.map(block => block.height),
+            y: blocks.map(block => block.difficulty),
+            // mode: 'markers',
+            type: 'line',
+            yaxis: 'y2',
+            name: 'Difficulty',
+            text: blocks.map(block => block.height),
+            // marker: {
+            //     size: 6
+            // },
         }];
 
     var figure = { 
@@ -62,7 +75,6 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
     };
 
     // This requires internet to work... crying-man-on-sofa.gif
-    // TODO: Render using d3.js... or something else.
     plotly.getImage(figure, imgOpts, function (error, imageStream) {
         if (error) return console.error(error);
     
