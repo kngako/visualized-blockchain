@@ -5,7 +5,7 @@ This nodejs codebase was inspired by some tweets from [@100TrillionUSD](https://
 ![Nonce Visualization](nonce.png)
 ## Gathering all required dependencies
 
-`npm install`
+```npm install```
 
 One of the dependencies is plotly.js which requires authenticated access to produce the graphs. So you are gonnna have to create an like they recommend on their [site](https://plot.ly/nodejs/getting-started/). 
 
@@ -20,7 +20,7 @@ I'm using config to specify things like the RPC server, blocks to sync/index in 
 ## Syncing or Indexing blocks
 The visualization is of the Bitcoin blockchain. So run the following command to get a few blocks to visualize.
 
-`node persist-blocks.js`
+```node persist-blocks.js```
 
 This will start index the blockchain from the newest block to the oldest.
 
@@ -28,12 +28,12 @@ This will start index the blockchain from the newest block to the oldest.
 
 The nonce.png is created by running the following command
 
-`node nonce-to-height-scatter-plot.js`
+```node nonce-to-height-scatter-plot.js```
 
 # TODO
 
 There's a few things that could be done to make this codebase better or easier to use. Here are a few of them.
-* Use d3.js instead of plotly.js to produce the visualization.
+* Use `d3.js` instead of plotly.js to produce the visualization.
 * Export an html of an interactive version of the visualization.
 * Write a few more scripts for other visualizations.
 * Sync and index the coinbase transaction and make visulizations.
