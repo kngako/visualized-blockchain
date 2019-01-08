@@ -35,9 +35,33 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
         name: 'Nonce to Block height distribution',
         text: blocks.map(block => block.height),
         marker: {
-            size: 10
+            size: 4
         },
-    }];
+    }, {
+        x: blocks.map(block => block.height),
+        y: blocks.map(block => block.difficulty),
+        // mode: 'markers',
+        type: 'line',
+        yaxis: 'y2',
+        name: 'Difficulty to Block height distribution',
+        text: blocks.map(block => block.height),
+        // marker: {
+        //     size: 6
+        // },
+    }, 
+    // {
+    //     x: blocks.map(block => block.height),
+    //     y: blocks.map(block => block.size - block.strippedsize),
+    //     // mode: 'markers',
+    //     type: 'line',
+    //     yaxis: 'y3',
+    //     name: 'Difficulty to Block height distribution',
+    //     text: blocks.map(block => block.height),
+    //     // marker: {
+    //     //     size: 6
+    //     // },
+    // }
+    ];
 
     var figure = { 
         'data': data, 
@@ -50,6 +74,16 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
                 title: "Nonce",
                 range: [minBlockNonce, maxBlockNonce]
             },
+            yaxis2: {
+                title: "Difficulty",
+                overlaying: 'y',
+                side: 'right'
+            },
+            // yaxis3: {
+            //     title: "Size - Stripped size",
+            //     overlaying: 'y',
+            //     side: 'right'
+            // },
             title:'Nonce Visualization'
         }
     };
@@ -61,6 +95,7 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
         // Do some work to keep aspect ratio...
     };
 
+    // This requires internet to work... crying-man-on-sofa.gif
     plotly.getImage(figure, imgOpts, function (error, imageStream) {
         if (error) return console.error(error);
     
