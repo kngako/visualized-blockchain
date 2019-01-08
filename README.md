@@ -1,13 +1,13 @@
 # Getting Started
 
-This nodejs codebase was inspired by some tweets from [@100TrillionUSD](https://twitter.com/100trillionUSD/status/1081217034485149697){:target="_blank"} about a weird pattern in the nonce vs block height visualization. Check out the thread to see what others are saying on the topic. Also there's a dope reddit thread on the topic sparked by [u/NekoNormalan](https://www.reddit.com/r/Bitcoin/comments/adddja/the_weird_nonce_pattern/){:target="_blank"}.
+This nodejs codebase was inspired by some tweets from [@100TrillionUSD](https://twitter.com/100trillionUSD/status/1081217034485149697) about a weird pattern in the nonce vs block height visualization. Check out the thread to see what others are saying on the topic. Also there's a dope reddit thread on the topic sparked by [u/NekoNormalan](https://www.reddit.com/r/Bitcoin/comments/adddja/the_weird_nonce_pattern/).
 
 ![Nonce Visualization](nonce.png)
 ## Gathering all required dependencies
 
 `npm install`
 
-One of the dependencies is plotly.js which requires authenticated access to produce the graphs. So you are gonnna have to create an like they recommend on their [site](https://plot.ly/nodejs/getting-started/){:target="_blank"}. 
+One of the dependencies is plotly.js which requires authenticated access to produce the graphs. So you are gonnna have to create an like they recommend on their [site](https://plot.ly/nodejs/getting-started/). 
 
 I hope to get ride of this dependecy once I figure out how to use d3.js properly. 
 
