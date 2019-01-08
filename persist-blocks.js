@@ -13,6 +13,10 @@ db = {};
 db.blocks = new Datastore({ filename: 'blocks.db', autoload: true });
 // db.coinbaseTransactions = new Datastore({ filename: 'coinbaseTransactions.db', autoload: true });
 
+db.blocks.ensureIndex({ fieldName: 'hash', unique: true, sparse: true }, function (error) {
+    console.error("Indexing Error: ", error)
+});
+
 var blocksToPersist = config.get("blocks-to-persist"); // How many blocks do you want to find in this run...
 var lowestBlock = {
     // I can have the genesis blockhash here...
@@ -73,7 +77,7 @@ var getBlockFor = (blockhash) => {
                 } else {
                     db.blocks.insert({
                         hash: block.hash,
-                        confirmations: block.confirmations,
+                        // confirmations: block.confirmations,
                         size: block.size,
                         strippedsize: block.strippedsize,
                         weight: block.weight,
@@ -89,6 +93,7 @@ var getBlockFor = (blockhash) => {
                         chainwork: block.chainwork,
                         previousblockhash: block.previousblockhash,
                         nextblockhash: block.nextblockhash,
+                        transactionCount: block.tx.length,
                         coinbaseTx: {
                             txid: block.tx[0]
                         }
@@ -96,15 +101,15 @@ var getBlockFor = (blockhash) => {
                         console.log("Block in DB: ", persistedBlock);
                         blocksToPersist--;
 
-                        loadAndPersistCoinbaseTransaction(persistedBlock.coinbaseTx.txid, persistedBlock.hash)
-                            .then(result => {
-                                // console.log("Coinbase updated: ", result);
-                            })
-                            .catch(error => {
-                                console.error("Coinbase Erro: ", error);
-                            })
+                        // TODO: Might want to load and persist coinbase transaction...
+                        // loadAndPersistCoinbaseTransaction(persistedBlock.coinbaseTx.txid, persistedBlock.hash)
+                        //     .then(result => {
+                        //         // console.log("Coinbase updated: ", result);
+                        //     })
+                        //     .catch(error => {
+                        //         console.error("Coinbase Erro: ", error);
+                        //     })
                         
-                        // TODO: if persistedBlock.height > highestPersistedBlock.height update highestPersistedBlock to persistedBlock...
                         if(persistedBlock.height > highestBlock.height) {
                             highestBlock = persistedBlock;
                         } 
@@ -112,13 +117,10 @@ var getBlockFor = (blockhash) => {
                             lowestBlock = persistedBlock;
                         }
                         if(blocksToPersist >= 0 && (block.previousblockhash || block.nextblockhash)) {
-                            // A little recursion to make the worl go round...
+                            // A little recursion to make the world go round...
                             resolve(Promise.resolve(getBlockFor(highestBlock.nextblockhash ? highestBlock.nextblockhash : lowestBlock.previousblockhash)));
-                            // Not quite sure about this resolve...
                         } else {
-                            // At this point we can render our datapoints...
-                            // console.log("Total Datapoints: ", dataPoints);
-                            // TODO: resolve?
+                            // At this point we are done syncing...
                             resolve(true);
                         }
                     } );
