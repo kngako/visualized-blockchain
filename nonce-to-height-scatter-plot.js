@@ -32,7 +32,7 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
         y: blocks.map(block => block.nonce),
         mode: 'markers',
         type: 'scatter',
-        name: 'Nonce to Block height distribution',
+        name: 'Nonce',
         text: blocks.map(block => block.height),
         marker: {
             size: 4
@@ -43,7 +43,7 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
         // mode: 'markers',
         type: 'line',
         yaxis: 'y2',
-        name: 'Difficulty to Block height distribution',
+        name: 'Difficulty',
         text: blocks.map(block => block.height),
         // marker: {
         //     size: 6
@@ -67,7 +67,7 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
         'data': data, 
         layout: { 
             xaxis: {
-                title: 'Height',
+                title: 'Block Height',
                 range: [ minBlockHeight, maxBlockHeight ] 
             },
             yaxis: {
