@@ -1,7 +1,8 @@
 // The visualization uses plotly and you will need an account work with their API...
-var config = require('config');
-var plotly = require('plotly')(config.get("plotly.username"), config.get("plotly.api-key"));
-var fs = require('fs');
+const fse = require('fs-extra');
+const jsdom = require('jsdom')
+
+const pathToPlotly = require.resolve('plotly.js-dist');
 
 var Datastore = require('nedb');
 db = {};
@@ -55,22 +56,30 @@ db.blocks.find({}).sort({height: -1}).exec(function (error, blocks) {
     };
 
     var imgOpts = {
-        format: 'png',
-        width: 1000,
-        height: 500,
-        // Do some work to keep aspect ratio...
+        format: 'svg', 
+        imageDataOnly: true,
     };
 
-    // This requires internet to work... crying-man-on-sofa.gif
-    // TODO: Render using d3.js... or something else.
-    plotly.getImage(figure, imgOpts, function (error, imageStream) {
-        if (error) return console.error(error);
-    
-        var fileStream = fs.createWriteStream('nonce.png');
-        imageStream.pipe(fileStream);
-    });
-    // plotly.plot(data, layout, function (err, msg) {
-    //     console.log(msg);
-    // });
+    // Trying to do it locally...
+    const virtualConsole = new jsdom.VirtualConsole()
+    virtualConsole.sendTo(console)
+
+    const w = new jsdom.JSDOM('', { runScripts: 'dangerously', virtualConsole }).window
+
+    // mock a few things that JSDOM doesn't support out-of-the-box
+    w.HTMLCanvasElement.prototype.getContext = function() { return null; };
+    w.URL.createObjectURL = function() { return null; };
+
+    fse.readFile(pathToPlotly, 'utf-8')
+        .then(w.eval)
+        .then(() => {
+            return w.Plotly.toImage(figure, imgOpts)
+        })
+        .then(img => {
+            return fse.writeFile('output/nonce.svg', img)
+        })
+        .catch(e => {
+            console.error("Error: ", e);
+        })
 
 });

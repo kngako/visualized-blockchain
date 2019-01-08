@@ -18,8 +18,10 @@
     "d3": "^5.7.0",
     "d3-node": "^2.1.0",
     "es6-promise": "^4.2.5",
+    "fs-extra": "^7.0.1",
     "isomorphic-fetch": "^2.2.1",
+    "jsdom": "^13.1.0",
     "nedb": "^1.8.0",
-    "plotly": "^1.0.6"
+    "plotly.js-dist": "^1.43.2"
   }
 }

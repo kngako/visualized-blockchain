@@ -7,10 +7,6 @@ This nodejs codebase was inspired by some tweets from [@100TrillionUSD](https://
 
 ```npm install```
 
-One of the dependencies is plotly.js which requires authenticated access to produce the graphs. So you are gonnna have to create an like they recommend on their [site](https://plot.ly/nodejs/getting-started/). 
-
-I hope to get ride of this dependecy once I figure out how to use d3.js properly. 
-
 ## Configuration values
 
 I'm using config to specify things like the RPC server, blocks to sync/index in a go and plotly credentials. You can update the values in `config/default.json` or just create a copy named `development.json` or `production.json` to match your `NODE_ENV` so that you don't commit any senstive credentials. 
@@ -33,7 +29,6 @@ The nonce.png is created by running the following command
 # TODO
 
 There's a few things that could be done to make this codebase better or easier to use. Here are a few of them.
-* Use `d3.js` instead of plotly.js to produce the visualization.
 * Export an html of an interactive version of the visualization.
 * Write a few more scripts for other visualizations.
 * Sync and index the coinbase transaction and make visulizations.
